@@ -6,12 +6,21 @@
 
 use frame_support::{decl_module, decl_storage, decl_event, decl_error, dispatch, traits::Get};
 use frame_system::ensure_signed;
+use frame_support::codec::{Encode, Decode};
+use sp_std::prelude::*;
 
 #[cfg(test)]
 mod mock;
 
 #[cfg(test)]
 mod tests;
+
+#[derive(Encode, Decode, Default, Clone, PartialEq, Debug, Eq)]
+pub struct UserDetails {
+	name: Vec<u8>,
+	age: u32,
+	adult: Option<u32>,
+}
 
 /// Configure the pallet by specifying the parameters and types on which it depends.
 pub trait Trait: frame_system::Trait {
@@ -29,6 +38,8 @@ decl_storage! {
 		// Learn more about declaring storage items:
 		// https://substrate.dev/docs/en/knowledgebase/runtime/storage#declaring-storage-items
 		Something get(fn something): Option<u32>;
+
+		Details get(fn get_user_details): UserDetails;
 	}
 }
 
@@ -39,6 +50,8 @@ decl_event!(
 		/// Event documentation should end with an array that provides descriptive names for event
 		/// parameters. [something, who]
 		SomethingStored(u32, AccountId),
+
+		UserDetailsStored(UserDetails, AccountId),
 	}
 );
 
@@ -78,6 +91,18 @@ decl_module! {
 			// Emit an event.
 			Self::deposit_event(RawEvent::SomethingStored(something, who));
 			// Return a successful DispatchResult
+			Ok(())
+		}
+
+		#[weight = 10_000 + T::DbWeight::get().writes(1)]
+		pub fn update_user_details(origin, details: UserDetails) -> dispatch::DispatchResult {
+			let who = ensure_signed(origin)?;
+			let mut details_to_store = details.clone();
+			if details.age >= 21 {
+				details_to_store.adult = Some(2020 - details.age);
+			}
+			Details::put(details_to_store.clone());
+			Self::deposit_event(RawEvent::UserDetailsStored(details_to_store, who));
 			Ok(())
 		}
 

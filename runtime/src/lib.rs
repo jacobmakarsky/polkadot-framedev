@@ -92,10 +92,10 @@ pub mod opaque {
 }
 
 pub const VERSION: RuntimeVersion = RuntimeVersion {
-	spec_name: create_runtime_str!("node-template"),
+	spec_name: create_runtime_str!("jacobmakarsky"),
 	impl_name: create_runtime_str!("node-template"),
 	authoring_version: 1,
-	spec_version: 1,
+	spec_version: 3, //update this value
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -129,6 +129,8 @@ parameter_types! {
 		.saturating_sub(Perbill::from_percent(10)) * MaximumBlockWeight::get();
 	pub const MaximumBlockLength: u32 = 5 * 1024 * 1024;
 	pub const Version: RuntimeVersion = VERSION;
+	pub MaximumSchedulerWeight: Weight = Perbill::from_percent(80) * MaximumBlockWeight::get();
+    pub const MaxScheduledPerBlock: u32 = 50;
 }
 
 // Configure FRAME pallets to include in runtime.
@@ -228,7 +230,7 @@ impl pallet_timestamp::Trait for Runtime {
 }
 
 parameter_types! {
-	pub const ExistentialDeposit: u128 = 500;
+	pub const ExistentialDeposit: u128 = 1000;
 	pub const MaxLocks: u32 = 50;
 }
 
